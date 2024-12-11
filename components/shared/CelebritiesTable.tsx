@@ -9,19 +9,20 @@ import { TableHeaderComponent } from "./TableHeaderComponent";
 
 import { useCelebritiesStore } from "@/lib/store";
 import SearchInput from "./search-input";
+import { Celebrity } from "@/interfaces/types";
 
 const CelebritiesTable = () => {
   const { filteredCelebrities, loading, page, setPage, fetchCelebrities } = useCelebritiesStore();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedCelebrity, setSelectedCelebrity] = useState(null);
+  const [selectedCelebrity, setSelectedCelebrity] = useState<Celebrity | null>(null);
 
   useEffect(() => {
     fetchCelebrities();
   }, []);
 
   // Обработчик клика по строке таблицы
-  const handleRowClick = (celebrity) => {
+  const handleRowClick = (celebrity: Celebrity) => {
     setSelectedCelebrity(celebrity);
     setDialogOpen(true);
   };
@@ -54,10 +55,7 @@ const CelebritiesTable = () => {
 
   const limit = 10;
   const totalPages = Math.ceil(filteredCelebrities.length / limit);
-  const paginatedCelebrities = filteredCelebrities.slice(
-    (page - 1) * limit,
-    page * limit
-  );
+  const paginatedCelebrities = filteredCelebrities.slice((page - 1) * limit, page * limit);
 
   if (loading) return <Loading />;
 

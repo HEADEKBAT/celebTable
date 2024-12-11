@@ -1,5 +1,5 @@
 export interface Celebrity {
-    id?: number; // Сделайте поле "id" необязательным
+    id?: number | null; // Сделайте поле "id" необязательным
     geo: string;
     name: string;
     category: string;
