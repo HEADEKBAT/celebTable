@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "../ui/textarea";
-import { ImageCompTableDialog } from "./image-comp-table-dialog";
 import { useCelebritiesStore } from "@/lib/store";
 import { Celebrity } from "../../interfaces/types";
 import { ImageUploader } from "./image-uploader";

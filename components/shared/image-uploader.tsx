@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { BASE_IMAGE_URL } from "@/config";
+import { Celebrity } from "@/interfaces/types";
 
 interface ImageUploaderProps {
-  field: keyof any; // Поле в объекте formData
-  formData: any; // Данные формы
-  setFormData: React.Dispatch<React.SetStateAction<any>>; // Обновление данных формы
+  field: keyof Celebrity; // Поле в объекте formData
+  formData: Celebrity; // Данные формы
+  setFormData: React.Dispatch<React.SetStateAction<Celebrity>>; // Обновление данных формы
 }
 
 export const ImageUploader: React.FC<ImageUploaderProps> = ({
@@ -50,7 +51,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         });
 
         if (response.ok) {
-          setFormData((prev: any) => ({ ...prev, [field]: randomFileName }));
+          setFormData((prev: Celebrity) => ({ ...prev, [field]: randomFileName }));
           setPreviewUrl(null); // Очищаем локальный preview после загрузки
         } else {
           console.error("Ошибка при загрузке изображения");
@@ -81,7 +82,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       });
 
       if (response.ok) {
-        setFormData((prev: any) => ({ ...prev, [field]: "" }));
+        setFormData((prev: Celebrity) => ({ ...prev, [field]: "" }));
         setPreviewUrl(null);
       } else {
         console.error("Ошибка при удалении изображения");

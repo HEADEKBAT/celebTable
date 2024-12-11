@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { BASE_IMAGE_URL } from "@/config";
+import { Celebrity } from "@/interfaces/types";
 
 interface Props {
   formData: {
@@ -10,7 +11,7 @@ interface Props {
     cimg4?: string;
     cimg5?: string;
   };
-  setFormData: React.Dispatch<React.SetStateAction<any>>;
+  setFormData: React.Dispatch<React.SetStateAction<Celebrity>>;
 }
 
 export const ImageCompTableDialog: React.FC<Props> = ({ formData, setFormData }) => {
@@ -31,7 +32,7 @@ export const ImageCompTableDialog: React.FC<Props> = ({ formData, setFormData })
       });
 
       if (response.ok) {
-        setFormData((prev) => ({ ...prev, [field]: "" }));
+        setFormData((prev: Celebrity) => ({ ...prev, [field]: "" }));
       } else {
         console.error("Ошибка при удалении изображения");
       }
@@ -60,7 +61,7 @@ export const ImageCompTableDialog: React.FC<Props> = ({ formData, setFormData })
       });
 
       if (response.ok) {
-        setFormData((prev) => ({ ...prev, [field]: randomFileName }));
+        setFormData((prev: Celebrity) => ({ ...prev, [field]: randomFileName }));
       } else {
         console.error("Ошибка при загрузке изображения");
       }
