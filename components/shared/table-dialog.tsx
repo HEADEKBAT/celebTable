@@ -63,7 +63,7 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={onClose} >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{formData.id ? "Редактировать запись" : "Добавить запись"}</DialogTitle>

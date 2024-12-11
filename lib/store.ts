@@ -102,7 +102,9 @@ export const useCelebritiesStore = create<CelebritiesState>((set, get) => ({
 
       // Проверяем частичное совпадение с ID
       const matchesId =
-        !isNaN(Number(filter)) && celeb.id.toString().includes(filter);
+      !isNaN(Number(filter)) &&
+      celeb.id != null && // Проверяем, что id не null и не undefined
+      celeb.id.toString().includes(filter);
 
       return matchesText || matchesId;
     });
