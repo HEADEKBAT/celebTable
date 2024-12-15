@@ -3,48 +3,52 @@ import { Celebrity } from "../interfaces/types";
 
 interface CelebritiesState {
   celebrities: Celebrity[]; // Все записи
-  filteredCelebrities: Celebrity[]; // Отфильтрованные записи
-  total: number; // Общее количество записей
+  paginatedCelebrities: Celebrity[]; // Записи для текущей страницы
   loading: boolean;
   filter: string; // Строка поиска
   sortBy: string; // Поле для сортировки
   sortOrder: "asc" | "desc"; // Порядок сортировки
   page: number; // Текущая страница
-  setPage: (page: number) => void; // Установить страницу
+  limit: number; // Количество записей на странице
+  totalPages: number; // Общее количество страниц
+  setPage: (page: number) => void; // Установить текущую страницу
   setFilter: (filter: string) => void; // Установить фильтр
   setSort: (sortBy: string, sortOrder: "asc" | "desc") => void; // Установить сортировку
   setLoading: (loading: boolean) => void; // Установить состояние загрузки
-
-  // API methods
   fetchCelebrities: () => Promise<void>; // Загрузить записи
-  saveCelebrity: (celebrity: Celebrity) => Promise<void>; // Сохранить/обновить запись
-
-  // Client-side filtering
-  applyFilter: () => void; // Применить фильтр
+  saveCelebrity: (celebrity: Celebrity) => Promise<void>; // Сохранить запись
+  saveNewCelebrity: () => Promise<Celebrity>; // Создать новую запись
+  applyFilterAndPagination: () => void; // Применить фильтрацию и пагинацию
 }
 
 export const useCelebritiesStore = create<CelebritiesState>((set, get) => ({
   celebrities: [],
-  filteredCelebrities: [],
-  total: 0,
+  paginatedCelebrities: [],
   loading: false,
   filter: "",
   sortBy: "id",
   sortOrder: "asc",
   page: 1,
+  limit: 30,
+  totalPages: 1,
 
-  setPage: (page) => set({ page }),
-  setFilter: (filter) => {
-    set({ filter, page: 1 }); // При изменении фильтра сбрасываем на первую страницу
-    get().applyFilter(); // Применяем фильтр
+  setPage: (page) => {
+    set({ page });
+    get().applyFilterAndPagination();
   },
+
+  setFilter: (filter) => {
+    set({ filter, page: 1 });
+    get().applyFilterAndPagination();
+  },
+
   setSort: (sortBy, sortOrder) => {
     set({ sortBy, sortOrder });
-    get().applyFilter(); // Применяем сортировку
+    get().applyFilterAndPagination();
   },
+
   setLoading: (loading) => set({ loading }),
 
-  // Fetch celebrities from server
   fetchCelebrities: async () => {
     set({ loading: true });
     try {
@@ -52,8 +56,9 @@ export const useCelebritiesStore = create<CelebritiesState>((set, get) => ({
       if (!response.ok) {
         throw new Error("Ошибка при получении данных");
       }
-      const { data, total } = await response.json();
-      set({ celebrities: data, filteredCelebrities: data, total });
+      const { data } = await response.json();
+      set({ celebrities: data });
+      get().applyFilterAndPagination();
     } catch (error) {
       console.error("Ошибка при получении данных:", error);
     } finally {
@@ -61,16 +66,13 @@ export const useCelebritiesStore = create<CelebritiesState>((set, get) => ({
     }
   },
 
-  // Save or update celebrity
   saveCelebrity: async (celebrity: Celebrity) => {
     set({ loading: true });
     try {
       const method = celebrity.id ? "PUT" : "POST";
       const response = await fetch("/api/celebrities", {
         method,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(celebrity),
       });
 
@@ -78,20 +80,52 @@ export const useCelebritiesStore = create<CelebritiesState>((set, get) => ({
         throw new Error("Ошибка при сохранении данных");
       }
 
-      // После сохранения обновляем данные
       await get().fetchCelebrities();
     } catch (error) {
-      console.error("Ошибка при сохранении данных:", error);
+      console.error("Ошибка при сохранении записи:", error);
     } finally {
       set({ loading: false });
     }
   },
 
-  // Client-side filtering and sorting
-  applyFilter: () => {
-    const { celebrities, filter, sortBy, sortOrder } = get();
+  saveNewCelebrity: async () => {
+    set({ loading: true });
+    try {
+      const response = await fetch("/api/celebrities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          geo: "",
+          name: "",
+          category: "",
+          subject: "",
+          about: "",
+          cimg1: null,
+          cimg2: null,
+          cimg3: null,
+          cimg4: null,
+          cimg5: null,
+        }),
+      });
 
-    // Применяем фильтр
+      if (!response.ok) {
+        throw new Error("Ошибка при создании записи");
+      }
+
+      const newCelebrity = await response.json();
+      await get().fetchCelebrities(); // Обновляем данные
+      return newCelebrity;
+    } catch (error) {
+      console.error("Ошибка при создании записи:", error);
+      throw error;
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  applyFilterAndPagination: () => {
+    const { celebrities, filter, sortBy, sortOrder, page, limit } = get();
+
     const lowerCaseFilter = filter.toLowerCase();
     const filtered = celebrities.filter((celeb) => {
       const matchesText =
@@ -100,16 +134,14 @@ export const useCelebritiesStore = create<CelebritiesState>((set, get) => ({
         celeb.category.toLowerCase().includes(lowerCaseFilter) ||
         celeb.subject.toLowerCase().includes(lowerCaseFilter);
 
-      // Проверяем частичное совпадение с ID
       const matchesId =
-      !isNaN(Number(filter)) &&
-      celeb.id != null && // Проверяем, что id не null и не undefined
-      celeb.id.toString().includes(filter);
+        !isNaN(Number(filter)) &&
+        celeb.id != null &&
+        celeb.id.toString().includes(filter);
 
       return matchesText || matchesId;
     });
 
-    // Применяем сортировку
     const sorted = filtered.sort((a, b) => {
       const aValue = a[sortBy as keyof Celebrity];
       const bValue = b[sortBy as keyof Celebrity];
@@ -127,6 +159,10 @@ export const useCelebritiesStore = create<CelebritiesState>((set, get) => ({
       return 0;
     });
 
-    set({ filteredCelebrities: sorted });
+    const totalPages = Math.ceil(sorted.length / limit);
+    const startIndex = (page - 1) * limit;
+    const paginated = sorted.slice(startIndex, startIndex + limit);
+
+    set({ paginatedCelebrities: paginated, totalPages });
   },
 }));

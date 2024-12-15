@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "../ui/textarea";
@@ -22,14 +28,15 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
     category: "",
     subject: "",
     about: "",
-    cimg1: "",
-    cimg2: "",
-    cimg3: "",
-    cimg4: "",
-    cimg5: "",
+    cimg1: null,
+    cimg2: null,
+    cimg3: null,
+    cimg4: null,
+    cimg5: null,
   });
 
   useEffect(() => {
+    // Устанавливаем данные формы из выбранной записи или сбрасываем для новой
     if (celebrity) {
       setFormData(celebrity);
     } else {
@@ -40,11 +47,11 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
         category: "",
         subject: "",
         about: "",
-        cimg1: "",
-        cimg2: "",
-        cimg3: "",
-        cimg4: "",
-        cimg5: "",
+        cimg1: null,
+        cimg2: null,
+        cimg3: null,
+        cimg4: null,
+        cimg5: null,
       });
     }
   }, [celebrity]);
@@ -54,23 +61,30 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
   };
 
   const handleSubmit = async () => {
-    if (!formData.id) {
-      console.error("ID не задан");
-      return;
-    }
     await saveCelebrity(formData);
     onClose();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose} >
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{formData.id ? "Редактировать запись" : "Добавить запись"}</DialogTitle>
+          <DialogDescription>
+            {formData.id ? "Измените информацию и сохраните изменения." : "Заполните данные для новой записи."}
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <Input placeholder="Гео" value={formData.geo} onChange={(e) => handleInputChange("geo", e.target.value)} />
-          <Input placeholder="Имя" value={formData.name} onChange={(e) => handleInputChange("name", e.target.value)} />
+          <Input
+            placeholder="Гео"
+            value={formData.geo}
+            onChange={(e) => handleInputChange("geo", e.target.value)}
+          />
+          <Input
+            placeholder="Имя"
+            value={formData.name}
+            onChange={(e) => handleInputChange("name", e.target.value)}
+          />
           <Input
             placeholder="Категория"
             value={formData.category}
@@ -86,17 +100,22 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
             value={formData.about}
             onChange={(e) => handleInputChange("about", e.target.value)}
           />
-          {/* Добавляем загрузчики изображений */}
           {["cimg1", "cimg2", "cimg3", "cimg4", "cimg5"].map((field) => (
-            <ImageUploader key={field} field={field as keyof Celebrity} formData={formData} setFormData={setFormData} />
+            <ImageUploader
+              key={field}
+              field={field as keyof Celebrity}
+              formData={formData}
+              setFormData={setFormData}
+            />
           ))}
         </div>
-
         <div className="mt-4 flex justify-end space-x-2">
           <Button variant="outline" onClick={onClose}>
             Отмена
           </Button>
-          <Button onClick={handleSubmit}>{formData.id ? "Сохранить изменения" : "Создать запись"}</Button>
+          <Button onClick={handleSubmit}>
+            {formData.id ? "Сохранить изменения" : "Создать запись"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

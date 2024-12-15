@@ -3,16 +3,10 @@ import prisma from "../../lib/prisma";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { page = 1, limit = 10, sortBy = "id", sortOrder = "asc", filter = "" } = req.query;
+    const { sortBy = "id", sortOrder = "asc", filter = "" } = req.query;
 
     if (req.method === "GET") {
-      // --- Получение данных с пагинацией, сортировкой и фильтрацией ---
-      const pageNumber = parseInt(page as string, 10);
-      const pageSize = parseInt(limit as string, 10);
-
-      const skip = (pageNumber - 1) * pageSize; // Для пагинации
-      const take = pageSize;
-
+      // --- Получение всех данных с сортировкой и фильтрацией ---
       const where = filter
         ? {
             OR: [
@@ -26,10 +20,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         [sortBy as string]: sortOrder === "asc" ? "asc" : "desc",
       };
 
-      const [data, total] = await Promise.all([
-        prisma.celebrities.findMany({ where, orderBy, skip, take }),
-        prisma.celebrities.count({ where }),
-      ]);
+      const data = await prisma.celebrities.findMany({ where, orderBy });
+      const total = await prisma.celebrities.count({ where });
 
       res.status(200).json({ data, total });
     } else if (req.method === "POST") {

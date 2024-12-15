@@ -1,5 +1,4 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
-
+import { Home, Search, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -9,52 +8,60 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
+import { useState } from "react";
+
+interface AppSidebarProps {
+  onNavigate: (page: string) => void; // Функция для передачи текущей страницы
+}
 
 // Menu items.
 const items = [
   {
     title: "Home",
-    url: "#",
+    page: "home",
     icon: Home,
   },
   {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
-  },
-  {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
-  },
-  {
-    title: "Search",
-    url: "#",
-    icon: Search,
-  },
-  {
-    title: "Settings",
-    url: "#",
+    title: "Regiser",
+    page: "register",
     icon: Settings,
   },
-]
+  {
+    title: "Login",
+    page: "login",
+    icon: Settings,
+  },
 
-export function AppSidebar() {
+  {
+    title: "Таблица",
+    page: "table",
+    icon: Search,
+  },
+];
+export function AppSidebar({ onNavigate }: AppSidebarProps) {
+  const [activePage, setActivePage] = useState<string>("home");
+
+  const handleNavigation = (page: string) => {
+    setActivePage(page); // Устанавливаем активную страницу
+    onNavigate(page); // Вызываем родительскую функцию навигации
+  };
+
   return (
     <Sidebar className="bg-sky-400">
       <SidebarContent className="bg-blue-800">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-white">Application</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-white">Ulise</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="text-white">
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
+                  <SidebarMenuButton
+                    onClick={() => handleNavigation(item.page)}
+                    className={activePage === item.page ? "bg-blue-600" : ""}
+                  >
+                    <item.icon />
+                    <span>{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -63,5 +70,5 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
-  )
+  );
 }
