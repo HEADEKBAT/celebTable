@@ -34,9 +34,13 @@ const CelebritiesTable = () => {
   };
 
   const handleNewRecord = async () => {
-    const newCelebrity = await saveNewCelebrity();
-    setSelectedCelebrity(newCelebrity);
-    setDialogOpen(true);
+    try {
+      const newCelebrity = await saveNewCelebrity();
+      setSelectedCelebrity(newCelebrity);
+      setDialogOpen(true);
+    } catch (error) {
+      console.error("Ошибка при создании новой записи:", error);
+    }
   };
 
   const handleDialogClose = () => {
@@ -62,6 +66,7 @@ const CelebritiesTable = () => {
               { key: "category", label: "Категория" },
               { key: "subject", label: "Субъект" },
               { key: "about", label: "Инфа" },
+              { key: "userName", label: "Пользователь" },
             ]}
           />
         </TableHeader>
@@ -78,6 +83,7 @@ const CelebritiesTable = () => {
               <TableCell>{celebrity.category}</TableCell>
               <TableCell>{celebrity.subject}</TableCell>
               <TableCell>{celebrity.about}</TableCell>
+              <TableCell>{celebrity.userName || "Неизвестно"}</TableCell>
             </TableRow>
           ))}
         </TableBody>

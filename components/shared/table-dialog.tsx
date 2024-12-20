@@ -1,11 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "../ui/textarea";
@@ -75,16 +69,8 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <Input
-            placeholder="Гео"
-            value={formData.geo}
-            onChange={(e) => handleInputChange("geo", e.target.value)}
-          />
-          <Input
-            placeholder="Имя"
-            value={formData.name}
-            onChange={(e) => handleInputChange("name", e.target.value)}
-          />
+          <Input placeholder="Гео" value={formData.geo} onChange={(e) => handleInputChange("geo", e.target.value)} />
+          <Input placeholder="Имя" value={formData.name} onChange={(e) => handleInputChange("name", e.target.value)} />
           <Input
             placeholder="Категория"
             value={formData.category}
@@ -101,21 +87,14 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
             onChange={(e) => handleInputChange("about", e.target.value)}
           />
           {["cimg1", "cimg2", "cimg3", "cimg4", "cimg5"].map((field) => (
-            <ImageUploader
-              key={field}
-              field={field as keyof Celebrity}
-              formData={formData}
-              setFormData={setFormData}
-            />
+            <ImageUploader key={field} field={field as keyof Celebrity} formData={formData} setFormData={setFormData} />
           ))}
         </div>
         <div className="mt-4 flex justify-end space-x-2">
           <Button variant="outline" onClick={onClose}>
             Отмена
           </Button>
-          <Button onClick={handleSubmit}>
-            {formData.id ? "Сохранить изменения" : "Создать запись"}
-          </Button>
+          <Button onClick={handleSubmit}>{formData.id ? "Сохранить изменения" : "Создать запись"}</Button>
         </div>
       </DialogContent>
     </Dialog>

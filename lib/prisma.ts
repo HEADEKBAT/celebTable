@@ -1,14 +1,26 @@
 // lib/prisma.ts
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient as PrismaClientCelebrities } from "@prisma/client"; // Клиент для celebrities.db
+import { PrismaClient as PrismaClientAuth } from "../prisma/generated/auth"; // Клиент для auth.db
 
 declare global {
   // Чтобы избежать ошибки повторного объявления PrismaClient при перезапуске сервера в dev-режиме
   // eslint-disable-next-line no-var
-  var prisma: PrismaClient | undefined;
+  var prismaCelebrities: PrismaClientCelebrities | undefined;
+  // eslint-disable-next-line no-var
+  var prismaAuth: PrismaClientAuth | undefined;
 }
 
-const prisma = global.prisma || new PrismaClient();
+// Инициализация клиента для базы данных celebrities
+const prismaCelebrities =
+  global.prismaCelebrities || new PrismaClientCelebrities();
 
-if (process.env.NODE_ENV !== 'production') global.prisma = prisma;
+// Инициализация клиента для базы данных auth
+const prismaAuth = global.prismaAuth || new PrismaClientAuth();
 
-export default prisma;
+if (process.env.NODE_ENV !== "production") {
+  global.prismaCelebrities = prismaCelebrities;
+  global.prismaAuth = prismaAuth;
+}
+
+// Экспортируем оба клиента
+export { prismaCelebrities, prismaAuth };

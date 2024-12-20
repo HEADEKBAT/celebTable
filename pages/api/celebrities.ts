@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../lib/prisma";
+import {prismaCelebrities} from "@/lib/prisma";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -20,15 +20,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         [sortBy as string]: sortOrder === "asc" ? "asc" : "desc",
       };
 
-      const data = await prisma.celebrities.findMany({ where, orderBy });
-      const total = await prisma.celebrities.count({ where });
+      const data = await prismaCelebrities.celebrities.findMany({ where, orderBy });
+      const total = await prismaCelebrities.celebrities.count({ where });
 
       res.status(200).json({ data, total });
     } else if (req.method === "POST") {
       // --- Добавление новой записи ---
       const { geo, name, category, subject, about, cimg1, cimg2, cimg3, cimg4, cimg5 } = req.body;
 
-      const newCelebrity = await prisma.celebrities.create({
+      const newCelebrity = await prismaCelebrities.celebrities.create({
         data: {
           geo,
           name,
@@ -52,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: "ID записи обязателен для обновления" });
       }
 
-      const updatedCelebrity = await prisma.celebrities.update({
+      const updatedCelebrity = await prismaCelebrities.celebrities.update({
         where: { id },
         data: {
           geo,

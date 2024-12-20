@@ -5,6 +5,7 @@ export interface Celebrity {
     category: string;
     subject: string;
     about: string;
+    userName?: string | null; // Сделайте поле "userName" необязательным
     cimg1?: string;
     cimg2?: string;
     cimg3?: string;

@@ -17,7 +17,7 @@ interface CelebritiesState {
   setLoading: (loading: boolean) => void; // Установить состояние загрузки
   fetchCelebrities: () => Promise<void>; // Загрузить записи
   saveCelebrity: (celebrity: Celebrity) => Promise<void>; // Сохранить запись
-  saveNewCelebrity: () => Promise<Celebrity>; // Создать новую запись
+  saveNewCelebrity: (userName: string) => Promise<Celebrity>; // Создать новую запись
   applyFilterAndPagination: () => void; // Применить фильтрацию и пагинацию
 }
 
@@ -52,11 +52,16 @@ export const useCelebritiesStore = create<CelebritiesState>((set, get) => ({
   fetchCelebrities: async () => {
     set({ loading: true });
     try {
-      const response = await fetch("/api/celebrities");
+      const response = await fetch("https://5.23.55.200/files/api/api.php", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
       if (!response.ok) {
         throw new Error("Ошибка при получении данных");
       }
-      const { data } = await response.json();
+
+      const data = await response.json();
       set({ celebrities: data });
       get().applyFilterAndPagination();
     } catch (error) {
@@ -69,9 +74,8 @@ export const useCelebritiesStore = create<CelebritiesState>((set, get) => ({
   saveCelebrity: async (celebrity: Celebrity) => {
     set({ loading: true });
     try {
-      const method = celebrity.id ? "PUT" : "POST";
-      const response = await fetch("/api/celebrities", {
-        method,
+      const response = await fetch("https://5.23.55.200/files/api/api.php", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(celebrity),
       });
@@ -88,10 +92,10 @@ export const useCelebritiesStore = create<CelebritiesState>((set, get) => ({
     }
   },
 
-  saveNewCelebrity: async () => {
+  saveNewCelebrity: async (userName: string) => {
     set({ loading: true });
     try {
-      const response = await fetch("/api/celebrities", {
+      const response = await fetch("https://5.23.55.200/files/api/api.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -100,6 +104,7 @@ export const useCelebritiesStore = create<CelebritiesState>((set, get) => ({
           category: "",
           subject: "",
           about: "",
+          userName: userName, // Передаем имя пользователя
           cimg1: null,
           cimg2: null,
           cimg3: null,

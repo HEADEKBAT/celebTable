@@ -1,0 +1,18 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/auth" // Уникальный путь для второго клиента
+}
+
+datasource auth {
+  provider = "sqlite"
+  url      = env("AUTH_DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("newUser") // Роли: admin, user, newUser, blockUser
+  createdAt DateTime @default(now())
+}

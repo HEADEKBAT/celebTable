@@ -1,3 +1,4 @@
+"use client";
 import { Home, Search, Settings } from "lucide-react";
 import {
   Sidebar,
@@ -10,6 +11,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useState } from "react";
+import { AppSidebarFooter } from "./app-sidebar-footer";
 
 interface AppSidebarProps {
   onNavigate: (page: string) => void; // Функция для передачи текущей страницы
@@ -23,7 +25,7 @@ const items = [
     icon: Home,
   },
   {
-    title: "Regiser",
+    title: "Register",
     page: "register",
     icon: Settings,
   },
@@ -32,20 +34,22 @@ const items = [
     page: "login",
     icon: Settings,
   },
-
   {
     title: "Таблица",
     page: "table",
     icon: Search,
   },
 ];
+
 export function AppSidebar({ onNavigate }: AppSidebarProps) {
   const [activePage, setActivePage] = useState<string>("home");
+
 
   const handleNavigation = (page: string) => {
     setActivePage(page); // Устанавливаем активную страницу
     onNavigate(page); // Вызываем родительскую функцию навигации
   };
+
 
   return (
     <Sidebar className="bg-sky-400">
@@ -58,7 +62,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     onClick={() => handleNavigation(item.page)}
-                    className={activePage === item.page ? "bg-blue-600" : ""}
+                    className={`flex items-center gap-2 ${activePage === item.page ? "bg-blue-600" : ""}`}
                   >
                     <item.icon />
                     <span>{item.title}</span>
@@ -69,6 +73,8 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <AppSidebarFooter />
     </Sidebar>
   );
 }
