@@ -1,5 +1,5 @@
 "use client";
-import { Home, Search, Settings } from "lucide-react";
+import { Home, Search } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -24,16 +24,16 @@ const items = [
     page: "home",
     icon: Home,
   },
-  {
-    title: "Register",
-    page: "register",
-    icon: Settings,
-  },
-  {
-    title: "Login",
-    page: "login",
-    icon: Settings,
-  },
+  // {
+  //   title: "Register",
+  //   page: "register",
+  //   icon: Settings,
+  // },
+  // {
+  //   title: "Login",
+  //   page: "login",
+  //   icon: Settings,
+  // },
   {
     title: "Таблица",
     page: "table",
@@ -42,7 +42,8 @@ const items = [
 ];
 
 export function AppSidebar({ onNavigate }: AppSidebarProps) {
-  const [activePage, setActivePage] = useState<string>("home");
+  const [activePage, setActivePage] = useState<string>("table");
+  console.log(activePage);
 
 
   const handleNavigation = (page: string) => {

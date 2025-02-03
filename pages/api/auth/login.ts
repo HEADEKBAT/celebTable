@@ -4,6 +4,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 
+
+
 const JWT_SECRET = process.env.JWT_SECRET || "super_secret_key";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

@@ -16,9 +16,10 @@ const CelebritiesTable = () => {
     loading,
     page,
     totalPages,
+    refreshTrigger,
     setPage,
     fetchCelebrities,
-    saveNewCelebrity,
+
   } = useCelebritiesStore();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -26,7 +27,7 @@ const CelebritiesTable = () => {
 
   useEffect(() => {
     fetchCelebrities();
-  }, []);
+  }, [refreshTrigger]);
 
   const handleRowClick = (celebrity: Celebrity) => {
     setSelectedCelebrity(celebrity);
@@ -35,8 +36,8 @@ const CelebritiesTable = () => {
 
   const handleNewRecord = async () => {
     try {
-      const newCelebrity = await saveNewCelebrity();
-      setSelectedCelebrity(newCelebrity);
+      // const newCelebrity = await saveNewCelebrity("");
+      // setSelectedCelebrity(newCelebrity);
       setDialogOpen(true);
     } catch (error) {
       console.error("Ошибка при создании новой записи:", error);

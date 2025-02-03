@@ -6,9 +6,9 @@ export interface Celebrity {
     subject: string;
     about: string;
     userName?: string | null; // Сделайте поле "userName" необязательным
-    cimg1?: string;
-    cimg2?: string;
-    cimg3?: string;
-    cimg4?: string;
-    cimg5?: string;
+    cimg1?: string | null;
+    cimg2?: string | null;
+    cimg3?: string | null;
+    cimg4?: string | null;
+    cimg5?: string | null;
   }

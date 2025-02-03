@@ -1,11 +1,15 @@
-import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import React, { useEffect, useState } from "react";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "../ui/textarea";
-import { useCelebritiesStore } from "@/lib/store";
 import { Celebrity } from "../../interfaces/types";
-import { ImageUploader } from "./image-uploader";
+
+import { useCelebritiesStore } from "@/lib/store";
+import { ImageField } from "./image-field";
+
+const BASE_IMAGE_URL = process.env.NEXT_PUBLIC_BASE_IMAGE_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface TableDialogProps {
   isOpen: boolean;
@@ -14,7 +18,6 @@ interface TableDialogProps {
 }
 
 export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) => {
-  const { saveCelebrity } = useCelebritiesStore();
   const [formData, setFormData] = useState<Celebrity>({
     id: undefined,
     geo: "",
@@ -22,15 +25,18 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
     category: "",
     subject: "",
     about: "",
-    cimg1: null,
-    cimg2: null,
-    cimg3: null,
-    cimg4: null,
-    cimg5: null,
+    userName: "",
+    cimg1: "",
+    cimg2: "",
+    cimg3: "",
+    cimg4: "",
+    cimg5: "",
   });
 
+  const [localImages, setLocalImages] = useState<{ [key in keyof Celebrity]?: File | null }>({});
+  const { triggerRefresh } = useCelebritiesStore();
+
   useEffect(() => {
-    // Устанавливаем данные формы из выбранной записи или сбрасываем для новой
     if (celebrity) {
       setFormData(celebrity);
     } else {
@@ -41,11 +47,12 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
         category: "",
         subject: "",
         about: "",
-        cimg1: null,
-        cimg2: null,
-        cimg3: null,
-        cimg4: null,
-        cimg5: null,
+        userName: "",
+        cimg1: "",
+        cimg2: "",
+        cimg3: "",
+        cimg4: "",
+        cimg5: "",
       });
     }
   }, [celebrity]);
@@ -54,23 +61,74 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleImageChange = (field: keyof Celebrity, file: File | null) => {
+    const timestamp = Date.now();
+    const randomName = file ? `${timestamp}-${field}.jpg` : "";
+
+    setLocalImages((prev) => ({ ...prev, [field]: file }));
+    setFormData((prev) => ({ ...prev, [field]: randomName }));
+  };
+
+  const handleImageDelete = (field: keyof Celebrity) => {
+    setLocalImages((prev) => ({ ...prev, [field]: null }));
+    setFormData((prev) => ({ ...prev, [field]: "" }));
+  };
+
   const handleSubmit = async () => {
-    await saveCelebrity(formData);
-    onClose();
+    try {
+      const formDataToSend = new FormData();
+
+      // Добавляем текстовые данные
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value) {
+          formDataToSend.append(key, value as string);
+        }
+      });
+
+      // Добавляем изображения
+      Object.entries(localImages).forEach(([key, file]) => {
+        if (file) {
+          formDataToSend.append(key, file);
+        }
+      });
+
+      const response = await fetch(`${API_URL}`, {
+        method: "POST",
+        body: formDataToSend, // Используем FormData для отправки
+      });
+
+      if (!response.ok) {
+        throw new Error("Ошибка при сохранении данных");
+      }
+
+      const result = await response.json();
+      console.log("Результат:", result);
+
+      triggerRefresh();
+      onClose();
+    } catch (error) {
+      console.error("Ошибка при сохранении записи:", error);
+    }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{formData.id ? "Редактировать запись" : "Добавить запись"}</DialogTitle>
-          <DialogDescription>
-            {formData.id ? "Измените информацию и сохраните изменения." : "Заполните данные для новой записи."}
-          </DialogDescription>
-        </DialogHeader>
+        <DialogTitle>{formData.id ? "Редактировать запись" : "Добавить запись"}</DialogTitle>
+        <DialogDescription>
+          {formData.id ? "Измените информацию и сохраните изменения." : "Заполните данные для новой записи."}
+        </DialogDescription>
         <div className="space-y-4">
-          <Input placeholder="Гео" value={formData.geo} onChange={(e) => handleInputChange("geo", e.target.value)} />
-          <Input placeholder="Имя" value={formData.name} onChange={(e) => handleInputChange("name", e.target.value)} />
+          <Input
+            placeholder="Гео"
+            value={formData.geo}
+            onChange={(e) => handleInputChange("geo", e.target.value)}
+          />
+          <Input
+            placeholder="Имя"
+            value={formData.name}
+            onChange={(e) => handleInputChange("name", e.target.value)}
+          />
           <Input
             placeholder="Категория"
             value={formData.category}
@@ -86,8 +144,20 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
             value={formData.about}
             onChange={(e) => handleInputChange("about", e.target.value)}
           />
-          {["cimg1", "cimg2", "cimg3", "cimg4", "cimg5"].map((field) => (
-            <ImageUploader key={field} field={field as keyof Celebrity} formData={formData} setFormData={setFormData} />
+          {[
+            "cimg1",
+            "cimg2",
+            "cimg3",
+            "cimg4",
+            "cimg5",
+          ].map((field) => (
+            <ImageField
+              key={field}
+              field={field as keyof Celebrity}
+              initialImageUrl={formData[field as keyof Celebrity] ? `${BASE_IMAGE_URL}/${formData.id}/${formData[field as keyof Celebrity]}` : null}
+              onImageChange={handleImageChange}
+              onImageDelete={handleImageDelete}
+            />
           ))}
         </div>
         <div className="mt-4 flex justify-end space-x-2">

@@ -39,8 +39,12 @@ export default function Register() {
 
       setMessage("Регистрация прошла успешно!");
       setForm({ email: "", password: "", name: "" }); // Очистка формы
-    } catch (err: unknown | Error) {
-      setError(err.message || "Произошла ошибка при регистрации");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Произошла ошибка при регистрации");
+      }
     } finally {
       setLoading(false);
     }
