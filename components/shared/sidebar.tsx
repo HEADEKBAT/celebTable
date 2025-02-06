@@ -4,18 +4,20 @@ import { useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./app-sidebar";
 import CelebritiesTable from "./CelebritiesTable";
-// import Register from "../auth/Register";
-// import Login from "../auth/Login";
+import Register from "../auth/Register";
+import AuthTable from "./auth-table";
+import Login from "../auth/Login";
 
 export default function Layout() {
-  const [currentPage, setCurrentPage] = useState<string>("table");
+  const [currentPage, setCurrentPage] = useState<string>("home");
 
   // Объект страниц
   const pages: Record<string, React.ReactNode> = {
     home: <div>Добро пожаловать на главную страницу!</div>,
     table: <CelebritiesTable />,
-    // register: <Register />,
-    // login: <Login />,
+    register: <Register />,
+    authTable: <AuthTable />,
+    login: <Login />,
   };
 
   return (

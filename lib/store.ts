@@ -78,28 +78,6 @@ export const useCelebritiesStore = create<CelebritiesState>((set, get) => ({
     }
   },
 
-  // saveCelebrity: async (celebrity: Celebrity) => {
-  //   set({ loading: true });
-  //   try {
-  //     const response = await fetch(`${API_URL}`, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(celebrity), // Отправляем только текстовые данные
-  //     });
-  
-  //     if (!response.ok) {
-  //       throw new Error("Ошибка при сохранении данных");
-  //     }
-  
-  //     await get().fetchCelebrities();
-  //   } catch (error) {
-  //     console.error("Ошибка при сохранении записи:", error);
-  //   } finally {
-  //     set({ loading: false });
-  //   }
-  // },
-  
-  
 
   // saveNewCelebrity: async (userName: string) => {
   //   set({ loading: true });

@@ -1,47 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { useAuthStore } from "@/lib/auth-store";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL
+import { Input } from "../ui/input";
+import { Alert } from "../ui/alert";
+import { useAuthStore } from "../../lib/auth-store";
 
 export default function Login() {
-  const { setAuth } = useAuthStore(); // Получаем функцию для установки авторизации
   const [form, setForm] = useState({ email: "", password: "" });
-  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-
-
-  console.log(API_URL);
+  const [error, setError] = useState("");
+  const login = useAuthStore((state) => state.login);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setMessage(""); // Сброс предыдущего сообщения
+    setError("");
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Ошибка при входе");
-      }
-
-      // Убедитесь, что вызывается setAuth с корректными данными
-      setAuth(data.user, data.token);
-      setMessage("Успешный вход!");
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        setMessage(error.message || "Произошла ошибка");
+      await login(form.email, form.password);
+      // Можно добавить редирект или уведомление об успешном входе
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
       } else {
-        setMessage("Неизвестная ошибка");
+        setError("Ошибка авторизации");
       }
     } finally {
       setLoading(false);
@@ -49,9 +32,12 @@ export default function Login() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 px-10 py-6 bg-gray-100 shadow-md rounded-lg">
-        <h3 className="text-xl font-bold text-center">Вход в аккаунт</h3>
+    <div className="flex justify-center items-center min-h-screen bg-gray-50">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-4 p-6 bg-white shadow-lg rounded-md max-w-sm w-full"
+      >
+        <h3 className="text-2xl font-bold text-center">Вход</h3>
 
         <Input
           type="email"
@@ -73,9 +59,7 @@ export default function Login() {
           {loading ? "Загрузка..." : "Войти"}
         </Button>
 
-        <p className={`text-sm text-center ${message.includes("Ошибка") ? "text-red-500" : "text-green-500"}`}>
-          {message}
-        </p>
+        {error && <Alert variant="destructive">{error}</Alert>}
       </form>
     </div>
   );

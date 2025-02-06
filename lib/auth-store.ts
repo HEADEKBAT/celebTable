@@ -1,62 +1,75 @@
 import { create } from "zustand";
+const AUTH_URL = process.env.NEXT_PUBLIC_AUTH_DATABASE_URL;
 
-interface User {
-  id: number;
+export interface User {
+  isAuthenticated: boolean;
+  role: "admin" | "newUser" | "teamUser" | "noUser";
+  name: string;
   email: string;
-  name?: string;
-  role?: string;
 }
 
 interface AuthState {
   user: User | null;
-  token: string | null;
-  isAuthenticated: boolean;
-  setAuth: (user: User, token: string) => void;
-  clearAuth: () => void;
-  checkAuth: () => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  setUser: (user: User) => void;
+  checkAuth: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  token: null,
-  isAuthenticated: false,
-
-  setAuth: (user, token) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
-    set({ user, token, isAuthenticated: true });
-  },
-
-  clearAuth: () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    set({ user: null, token: null, isAuthenticated: false });
-  },
-
-  checkAuth: async () => {
-    const token = localStorage.getItem("token");
   
-    if (!token) {
-      console.log("Token not found in localStorage");
-      return;
-    }
-  
+  // Метод авторизации: при успешном входе сохраняем данные в состояние и localStorage под ключом "UliseUser"
+  login: async (email: string, password: string) => {
     try {
-      const res = await fetch("/api/auth/me", {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch(`${AUTH_URL}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "login", email, password }),
       });
-  
+      const data = await res.json();
       if (!res.ok) {
-        throw new Error("Failed to fetch user data");
+        throw new Error(data.error || "Ошибка авторизации");
       }
-  
-      const user = await res.json();
-      console.log("User loaded:", user); // Лог для проверки
-      set({ user, token, isAuthenticated: true });
-    } catch (error) {
-      console.error("Failed to load user:", error);
-      localStorage.removeItem("token");
-      set({ user: null, token: null, isAuthenticated: false });
+      
+      const user: User = {
+        isAuthenticated: true,
+        role: data.user.role,
+        name: data.user.name,
+        email: data.user.email,
+      };
+
+      set({ user });
+      localStorage.setItem("UliseUser", JSON.stringify(user));
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  },
+
+  // Метод выхода: очищаем состояние и удаляем объект из localStorage
+  logout: () => {
+    set({ user: null });
+    localStorage.removeItem("UliseUser");
+  },
+
+  // Устанавливаем пользователя и сохраняем в localStorage
+  setUser: (user: User) => {
+    set({ user });
+    localStorage.setItem("UliseUser", JSON.stringify(user));
+  },
+
+  // Метод для проверки наличия ранее авторизованного пользователя в localStorage.
+  // Если объект найден, обновляем состояние.
+  checkAuth: () => {
+    const storedUser = localStorage.getItem("UliseUser");
+    if (storedUser) {
+      try {
+        const user: User = JSON.parse(storedUser);
+        set({ user });
+      } catch (err) {
+        console.error("Ошибка парсинга данных из localStorage:", err);
+      }
     }
   },
 }));

@@ -5,6 +5,8 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Alert } from "../ui/alert";
 
+const AUTH_URL = process.env.NEXT_PUBLIC_AUTH_DATABASE_URL;
+
 export default function Register() {
   const [form, setForm] = useState({ email: "", password: "", name: "" });
   const [message, setMessage] = useState("");
@@ -17,28 +19,32 @@ export default function Register() {
     setMessage("");
     setError("");
 
-    // Валидация длины пароля
-    if (form.password.length < 4) {
+    if (form.password.length < 6) {
       setError("Пароль должен содержать минимум 6 символов");
       setLoading(false);
       return;
     }
 
     try {
-      const res = await fetch("/api/auth/register", {
+      // Используем FormData для отправки данных в формате multipart/form-data
+      const formData = new FormData();
+      formData.append("email", form.email);
+      formData.append("password", form.password);
+      formData.append("name", form.name);
+
+      const res = await fetch(`${AUTH_URL}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: formData,
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || "Ошибка при регистрации");
+        throw new Error(data.error || "Ошибка при регистрации");
       }
 
       setMessage("Регистрация прошла успешно!");
-      setForm({ email: "", password: "", name: "" }); // Очистка формы
+      setForm({ email: "", password: "", name: "" });
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);

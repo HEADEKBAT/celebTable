@@ -16,3 +16,4 @@ model User {
   role      String   @default("newUser") // Роли: admin, user, newUser, blockUser
   createdAt DateTime @default(now())
 }
+  
