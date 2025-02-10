@@ -5,10 +5,11 @@ export interface Celebrity {
     category: string;
     subject: string;
     about: string;
-    userName?: string | null; // Сделайте поле "userName" необязательным
+    owner?: string | null; // Сделайте поле "owner" необязательным
     cimg1?: string | null;
     cimg2?: string | null;
     cimg3?: string | null;
     cimg4?: string | null;
     cimg5?: string | null;
+    access?:  string | null | [];
   }

@@ -23,7 +23,7 @@ interface CelebritiesState {
   setLoading: (loading: boolean) => void; // Установить состояние загрузки
   fetchCelebrities: () => Promise<void>; // Загрузить записи
   // saveCelebrity: (celebrity: Celebrity) => Promise<void>; // Сохранить запись
-  // saveNewCelebrity: (userName: string) => Promise<Celebrity>; // Создать новую запись
+  // saveNewCelebrity: (owner: string) => Promise<Celebrity>; // Создать новую запись
   applyFilterAndPagination: () => void; // Применить фильтрацию и пагинацию
 }
 
@@ -79,7 +79,7 @@ export const useCelebritiesStore = create<CelebritiesState>((set, get) => ({
   },
 
 
-  // saveNewCelebrity: async (userName: string) => {
+  // saveNewCelebrity: async (owner: string) => {
   //   set({ loading: true });
   //   try {
   //     const response = await fetch(`${API_URL}`, {
@@ -91,7 +91,7 @@ export const useCelebritiesStore = create<CelebritiesState>((set, get) => ({
   //         category: "",
   //         subject: "",
   //         about: "",
-  //         userName: userName, // Передаем имя пользователя
+  //         owner: owner, // Передаем имя пользователя
   //         cimg1: null,
   //         cimg2: null,
   //         cimg3: null,

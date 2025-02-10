@@ -11,16 +11,8 @@ import { Celebrity } from "@/interfaces/types";
 import { TableHeaderComponent } from "./TableHeaderComponent";
 
 const CelebritiesTable = () => {
-  const {
-    paginatedCelebrities,
-    loading,
-    page,
-    totalPages,
-    refreshTrigger,
-    setPage,
-    fetchCelebrities,
-
-  } = useCelebritiesStore();
+  const { paginatedCelebrities, loading, page, totalPages, refreshTrigger, setPage, fetchCelebrities } =
+    useCelebritiesStore();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedCelebrity, setSelectedCelebrity] = useState<Celebrity | null>(null);
@@ -67,7 +59,7 @@ const CelebritiesTable = () => {
               { key: "category", label: "Категория" },
               { key: "subject", label: "Субъект" },
               { key: "about", label: "Инфа" },
-              { key: "userName", label: "Пользователь" },
+              { key: "owner", label: "Пользователь" },
             ]}
           />
         </TableHeader>
@@ -84,7 +76,7 @@ const CelebritiesTable = () => {
               <TableCell>{celebrity.category}</TableCell>
               <TableCell>{celebrity.subject}</TableCell>
               <TableCell>{celebrity.about}</TableCell>
-              <TableCell>{celebrity.userName || "Неизвестно"}</TableCell>
+              <TableCell>{celebrity.owner || "Неизвестно"}</TableCell>
             </TableRow>
           ))}
         </TableBody>

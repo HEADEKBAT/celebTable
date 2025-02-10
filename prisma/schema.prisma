@@ -14,7 +14,7 @@ model celebrities {
   category String
   subject  String
   about    String
-  userName String?
+  owner    String?
   cimg1    String?
   cimg2    String?
   cimg3    String?

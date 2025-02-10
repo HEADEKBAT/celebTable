@@ -2,9 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "../ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { Celebrity } from "../../interfaces/types";
-
 import { useCelebritiesStore } from "@/lib/store";
 import { ImageField } from "./image-field";
 
@@ -25,12 +24,14 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
     category: "",
     subject: "",
     about: "",
-    userName: "",
+    // owner будет передаваться как null, а access — как строка "[]"
+    owner: null,
     cimg1: "",
     cimg2: "",
     cimg3: "",
     cimg4: "",
     cimg5: "",
+    access: "[]",
   });
 
   const [localImages, setLocalImages] = useState<{ [key in keyof Celebrity]?: File | null }>({});
@@ -47,12 +48,13 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
         category: "",
         subject: "",
         about: "",
-        userName: "",
+        owner: null,
         cimg1: "",
         cimg2: "",
         cimg3: "",
         cimg4: "",
         cimg5: "",
+        access: "[]",
       });
     }
   }, [celebrity]);
@@ -64,7 +66,6 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
   const handleImageChange = (field: keyof Celebrity, file: File | null) => {
     const timestamp = Date.now();
     const randomName = file ? `${timestamp}-${field}.jpg` : "";
-
     setLocalImages((prev) => ({ ...prev, [field]: file }));
     setFormData((prev) => ({ ...prev, [field]: randomName }));
   };
@@ -80,7 +81,10 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
 
       // Добавляем текстовые данные
       Object.entries(formData).forEach(([key, value]) => {
-        if (value) {
+        // Если поле owner имеет значение null, отправляем пустую строку
+        if (key === "owner" && value === null) {
+          formDataToSend.append(key, "");
+        } else if (value) {
           formDataToSend.append(key, value as string);
         }
       });
@@ -94,7 +98,7 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
 
       const response = await fetch(`${API_URL}`, {
         method: "POST",
-        body: formDataToSend, // Используем FormData для отправки
+        body: formDataToSend,
       });
 
       if (!response.ok) {
@@ -119,16 +123,8 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
           {formData.id ? "Измените информацию и сохраните изменения." : "Заполните данные для новой записи."}
         </DialogDescription>
         <div className="space-y-4">
-          <Input
-            placeholder="Гео"
-            value={formData.geo}
-            onChange={(e) => handleInputChange("geo", e.target.value)}
-          />
-          <Input
-            placeholder="Имя"
-            value={formData.name}
-            onChange={(e) => handleInputChange("name", e.target.value)}
-          />
+          <Input placeholder="Гео" value={formData.geo} onChange={(e) => handleInputChange("geo", e.target.value)} />
+          <Input placeholder="Имя" value={formData.name} onChange={(e) => handleInputChange("name", e.target.value)} />
           <Input
             placeholder="Категория"
             value={formData.category}
@@ -144,17 +140,15 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
             value={formData.about}
             onChange={(e) => handleInputChange("about", e.target.value)}
           />
-          {[
-            "cimg1",
-            "cimg2",
-            "cimg3",
-            "cimg4",
-            "cimg5",
-          ].map((field) => (
+          {["cimg1", "cimg2", "cimg3", "cimg4", "cimg5"].map((field) => (
             <ImageField
               key={field}
               field={field as keyof Celebrity}
-              initialImageUrl={formData[field as keyof Celebrity] ? `${BASE_IMAGE_URL}/${formData.id}/${formData[field as keyof Celebrity]}` : null}
+              initialImageUrl={
+                formData[field as keyof Celebrity]
+                  ? `${BASE_IMAGE_URL}/${formData.id}/${formData[field as keyof Celebrity]}`
+                  : null
+              }
               onImageChange={handleImageChange}
               onImageDelete={handleImageDelete}
             />
