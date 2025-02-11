@@ -109,7 +109,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
     <Sidebar className="bg-sky-400">
       <SidebarContent className="bg-blue-800">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-white">Ulise</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-white">Ulysse</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="text-white">
               {filteredItems.map((item) => (
