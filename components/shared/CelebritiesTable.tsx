@@ -9,6 +9,7 @@ import { useCelebritiesStore } from "@/lib/store";
 import SearchInput from "./search-input";
 import { Celebrity } from "@/interfaces/types";
 import { TableHeaderComponent } from "./TableHeaderComponent";
+import OwnerFilter from "./OwnerFilter";
 
 const CelebritiesTable = () => {
   const { paginatedCelebrities, loading, page, totalPages, refreshTrigger, setPage, fetchCelebrities } =
@@ -27,13 +28,7 @@ const CelebritiesTable = () => {
   };
 
   const handleNewRecord = async () => {
-    try {
-      // const newCelebrity = await saveNewCelebrity("");
-      // setSelectedCelebrity(newCelebrity);
-      setDialogOpen(true);
-    } catch (error) {
-      console.error("Ошибка при создании новой записи:", error);
-    }
+    setDialogOpen(true);
   };
 
   const handleDialogClose = () => {
@@ -45,9 +40,14 @@ const CelebritiesTable = () => {
 
   return (
     <>
-      <div className="mb-4 flex justify-between">
-        <SearchInput />
-        <Button onClick={handleNewRecord}>Добавить новую запись</Button>
+      <div className="flex justify-between flex-col pb-4">
+        <div className="mb-4 flex justify-between gap-4">
+          <SearchInput />
+          <Button onClick={handleNewRecord}>Добавить новую запись</Button>
+        </div>
+        <div>
+          <OwnerFilter />
+        </div>
       </div>
       <Table>
         <TableHeader>

@@ -1,11 +1,19 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Celebrity } from "../../interfaces/types";
 import { useCelebritiesStore } from "@/lib/store";
 import { ImageField } from "./image-field";
+import { useAuthStore } from "@/lib/auth-store";
 
 const BASE_IMAGE_URL = process.env.NEXT_PUBLIC_BASE_IMAGE_URL;
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -17,6 +25,9 @@ interface TableDialogProps {
 }
 
 export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) => {
+  const { triggerRefresh } = useCelebritiesStore();
+  const { user: authUser } = useAuthStore();
+
   const [formData, setFormData] = useState<Celebrity>({
     id: undefined,
     geo: "",
@@ -24,8 +35,7 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
     category: "",
     subject: "",
     about: "",
-    // owner будет передаваться как null, а access — как строка "[]"
-    owner: null,
+    owner: null, // При создании новой записи owner изначально null
     cimg1: "",
     cimg2: "",
     cimg3: "",
@@ -35,8 +45,8 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
   });
 
   const [localImages, setLocalImages] = useState<{ [key in keyof Celebrity]?: File | null }>({});
-  const { triggerRefresh } = useCelebritiesStore();
 
+  // При изменении celebrity заполняем форму, либо сбрасываем её для новой записи
   useEffect(() => {
     if (celebrity) {
       setFormData(celebrity);
@@ -59,6 +69,13 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
     }
   }, [celebrity]);
 
+  // Если авторизованный пользователь найден, заполняем поле owner
+  useEffect(() => {
+    if (authUser) {
+      setFormData((prev) => ({ ...prev, owner: authUser.name }));
+    }
+  }, [authUser]);
+
   const handleInputChange = (field: keyof Celebrity, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -75,39 +92,32 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
     setFormData((prev) => ({ ...prev, [field]: "" }));
   };
 
+  // Функция для сохранения изменений (если редактируется запись) или создания новой записи
   const handleSubmit = async () => {
     try {
       const formDataToSend = new FormData();
-
-      // Добавляем текстовые данные
       Object.entries(formData).forEach(([key, value]) => {
-        // Если поле owner имеет значение null, отправляем пустую строку
+        // Для поля owner, если значение null, отправляем пустую строку
         if (key === "owner" && value === null) {
           formDataToSend.append(key, "");
         } else if (value) {
           formDataToSend.append(key, value as string);
         }
       });
-
-      // Добавляем изображения
       Object.entries(localImages).forEach(([key, file]) => {
         if (file) {
           formDataToSend.append(key, file);
         }
       });
-
       const response = await fetch(`${API_URL}`, {
         method: "POST",
         body: formDataToSend,
       });
-
       if (!response.ok) {
         throw new Error("Ошибка при сохранении данных");
       }
-
       const result = await response.json();
       console.log("Результат:", result);
-
       triggerRefresh();
       onClose();
     } catch (error) {
@@ -115,16 +125,107 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
     }
   };
 
+  // Функция для создания дублированной записи
+  const handleDuplicate = async () => {
+    try {
+      // Если записи для дублирования нет, выходим с ошибкой
+      if (!formData.id) {
+        throw new Error("Нет записи для дублирования");
+      }
+      // Сохраняем оригинальный id, который понадобится для дублирования
+      const originalId = formData.id;
+      // Создаем копию данных и удаляем поле id, чтобы API создало новую запись
+      const duplicateData = { ...formData };
+      delete duplicateData.id;
+      // Устанавливаем owner согласно авторизованному пользователю (если есть)
+      if (authUser) {
+        duplicateData.owner = authUser.name;
+      }
+  
+      const formDataToSend = new FormData();
+      // Добавляем параметр action и оригинальный id
+      formDataToSend.append("action", "duplicate");
+      formDataToSend.append("id", originalId.toString());
+  
+      // Добавляем остальные текстовые поля
+      Object.entries(duplicateData).forEach(([key, value]) => {
+        if (key === "owner" && value === null) {
+          formDataToSend.append(key, "");
+        } else if (value) {
+          formDataToSend.append(key, value as string);
+        }
+      });
+      // Добавляем изображения: если новое изображение выбрано, отправляем его;
+      // иначе, отправляем текущее значение поля
+      Object.entries(localImages).forEach(([key, file]) => {
+        if (file) {
+          formDataToSend.append(key, file);
+        } else if (duplicateData[key as keyof Celebrity]) {
+          formDataToSend.append(key, duplicateData[key as keyof Celebrity] as string);
+        }
+      });
+  
+      const response = await fetch(`${API_URL}`, {
+        method: "POST",
+        body: formDataToSend,
+      });
+      if (!response.ok) {
+        throw new Error("Ошибка при создании дублированной записи");
+      }
+      const result = await response.json();
+      console.log("Дублированная запись создана:", result);
+      triggerRefresh();
+      onClose();
+    } catch (error) {
+      console.error("Ошибка при создании дублированной записи:", error);
+    }
+  };
+  
+  // Функция для удаления записи
+  const handleDelete = async () => {
+    if (!formData.id) return;
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("action", "delete");
+      formDataToSend.append("id", formData.id.toString());
+      const response = await fetch(`${API_URL}`, {
+        method: "POST",
+        body: formDataToSend,
+      });
+      if (!response.ok) {
+        throw new Error("Ошибка при удалении записи");
+      }
+      const result = await response.json();
+      console.log("Запись удалена:", result);
+      triggerRefresh();
+      onClose();
+    } catch (error) {
+      console.error("Ошибка при удалении записи:", error);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
-        <DialogTitle>{formData.id ? "Редактировать запись" : "Добавить запись"}</DialogTitle>
+        <DialogTitle>
+          {formData.id ? "Редактировать запись" : "Добавить запись"}
+        </DialogTitle>
         <DialogDescription>
-          {formData.id ? "Измените информацию и сохраните изменения." : "Заполните данные для новой записи."}
+          {formData.id
+            ? "Измените информацию и сохраните изменения."
+            : "Заполните данные для новой записи."}
         </DialogDescription>
         <div className="space-y-4">
-          <Input placeholder="Гео" value={formData.geo} onChange={(e) => handleInputChange("geo", e.target.value)} />
-          <Input placeholder="Имя" value={formData.name} onChange={(e) => handleInputChange("name", e.target.value)} />
+          <Input
+            placeholder="Гео"
+            value={formData.geo}
+            onChange={(e) => handleInputChange("geo", e.target.value)}
+          />
+          <Input
+            placeholder="Имя"
+            value={formData.name}
+            onChange={(e) => handleInputChange("name", e.target.value)}
+          />
           <Input
             placeholder="Категория"
             value={formData.category}
@@ -158,7 +259,19 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
           <Button variant="outline" onClick={onClose}>
             Отмена
           </Button>
-          <Button onClick={handleSubmit}>{formData.id ? "Сохранить изменения" : "Создать запись"}</Button>
+          {formData.id ? (
+            <>
+              <Button variant="outline" onClick={handleDuplicate}>
+                Сделать дубль
+              </Button>
+              <Button onClick={handleSubmit}>Редактировать</Button>
+              <Button variant="destructive" onClick={handleDelete}>
+                Удалить
+              </Button>
+            </>
+          ) : (
+            <Button onClick={handleSubmit}>Создать</Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
