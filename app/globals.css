@@ -5,6 +5,9 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
+.main-bg-color {
+  background-color: var(--main-bg-color);
+}
 
 @layer utilities {
   .text-balance {
@@ -14,6 +17,7 @@ body {
 
 @layer base {
   :root {
+    --main-bg-color:#300ba8;
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;

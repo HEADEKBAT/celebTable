@@ -3,13 +3,7 @@
 import { useEffect, useState, ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -128,9 +122,7 @@ export default function UsersTable() {
       }
       // Обновляем состояние пользователей
       setUsers((prevUsers) =>
-        prevUsers.map((u) =>
-          u.id === user.id ? { ...u, name: editedData.name, role: editedData.role } : u
-        )
+        prevUsers.map((u) => (u.id === user.id ? { ...u, name: editedData.name, role: editedData.role } : u))
       );
       // Выходим из режима редактирования
       handleCancelClick(user.id);
@@ -182,7 +174,7 @@ export default function UsersTable() {
             <th className="border border-gray-300 p-2">Email</th>
             <th className="border border-gray-300 p-2">Name</th>
             <th className="border border-gray-300 p-2">Role</th>
-            <th className="border border-gray-300 p-2">Created At</th>
+            {/* <th className="border border-gray-300 p-2">Created At</th> */}
             <th className="border border-gray-300 p-2">Действия</th>
           </tr>
         </thead>
@@ -226,7 +218,7 @@ export default function UsersTable() {
                     user.role
                   )}
                 </td>
-                <td className="border border-gray-300 p-2">{user.createdAt}</td>
+                {/* <td className="border border-gray-300 p-2">{user.createdAt}</td> */}
                 <td className="border border-gray-300 p-2">
                   {isEditing ? (
                     <div className="flex gap-2">
@@ -256,12 +248,8 @@ export default function UsersTable() {
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel onClick={() => setOpenDeleteDialog(false)}>
-                              Отмена
-                            </AlertDialogCancel>
-                            <AlertDialogAction onClick={handleConfirmDelete}>
-                              Удалить
-                            </AlertDialogAction>
+                            <AlertDialogCancel onClick={() => setOpenDeleteDialog(false)}>Отмена</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleConfirmDelete}>Удалить</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
@@ -284,12 +272,8 @@ export default function UsersTable() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setOpenDeleteDialog(false)}>
-                Отмена
-              </AlertDialogCancel>
-              <AlertDialogAction onClick={handleConfirmDelete}>
-                Удалить
-              </AlertDialogAction>
+              <AlertDialogCancel onClick={() => setOpenDeleteDialog(false)}>Отмена</AlertDialogCancel>
+              <AlertDialogAction onClick={handleConfirmDelete}>Удалить</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

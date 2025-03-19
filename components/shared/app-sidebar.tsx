@@ -1,7 +1,8 @@
 "use client";
 
 import { ForwardRefExoticComponent, RefAttributes, useEffect, useState } from "react";
-import { Home, LucideProps, Search, Settings } from "lucide-react";
+import { Home, LogIn, LucideProps, Shield, Table, UserCheck } from "lucide-react";
+import Image from "next/image";
 import {
   Sidebar,
   SidebarContent,
@@ -15,6 +16,7 @@ import {
 import { AppSidebarFooter } from "./app-sidebar-footer";
 import { useAuthStore } from "@/lib/auth-store";
 
+import logoImg from "../../image/logo.png";
 // Все пункты меню
 const allItems = [
   {
@@ -25,22 +27,22 @@ const allItems = [
   {
     title: "Register",
     page: "register",
-    icon: Settings,
+    icon: UserCheck,
   },
   {
     title: "Login",
     page: "login",
-    icon: Settings,
+    icon: LogIn,
   },
   {
     title: "authTable",
     page: "authTable",
-    icon: Search,
+    icon: Shield,
   },
   {
     title: "Таблица",
     page: "table",
-    icon: Search,
+    icon: Table,
   },
 ];
 
@@ -60,12 +62,22 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 
   // Фильтрация доступных пунктов меню в зависимости от статуса пользователя
   useEffect(() => {
-    let allowedItems: typeof allItems | ((prevState: { title: string; page: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; }[]) => { title: string; page: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; }[]) = [];
+    let allowedItems:
+      | typeof allItems
+      | ((
+          prevState: {
+            title: string;
+            page: string;
+            icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>;
+          }[]
+        ) => {
+          title: string;
+          page: string;
+          icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>;
+        }[]) = [];
     if (!user) {
       // Не авторизован: доступны только Home, Login, Register
-      allowedItems = allItems.filter((item) =>
-        ["home", "login", "register"].includes(item.page)
-      );
+      allowedItems = allItems.filter((item) => ["home", "login", "register"].includes(item.page));
       if (!allowedItems.find((item) => item.page === activePage)) {
         setActivePage("home");
         onNavigate("home");
@@ -79,18 +91,14 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
           onNavigate("home");
         }
       } else if (user.role === "teamUser") {
-        allowedItems = allItems.filter((item) =>
-          ["home", "table"].includes(item.page)
-        );
+        allowedItems = allItems.filter((item) => ["home", "table"].includes(item.page));
         if (!allowedItems.find((item) => item.page === activePage)) {
           setActivePage("home");
           onNavigate("home");
         }
       } else if (user.role === "admin") {
         // Для админа доступны все страницы, кроме регистрации и авторизации.
-        allowedItems = allItems.filter(
-          (item) => !["register", "login"].includes(item.page)
-        );
+        allowedItems = allItems.filter((item) => !["register", "login"].includes(item.page));
         if (!activePage) {
           setActivePage("home");
           onNavigate("home");
@@ -107,18 +115,26 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 
   return (
     <Sidebar className="bg-sky-400">
-      <SidebarContent className="bg-blue-800">
+      <SidebarContent className="main-bg-color">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-white">Ulysse</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-white text-xl mb-8 mt-4 flex gap-2 ">
+            <Image
+              src={logoImg}
+              priority={true}
+              alt=""
+              width={50}
+              height={50}
+              className="block rounded-xl border-2 border-sky-400/30"
+            />
+            Ulysse
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="text-white">
               {filteredItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     onClick={() => handleNavigation(item.page)}
-                    className={`flex items-center gap-2 ${
-                      activePage === item.page ? "bg-blue-600" : ""
-                    }`}
+                    className={`flex items-center gap-2 ${activePage === item.page ? "bg-blue-600" : ""}`}
                   >
                     <item.icon />
                     <span>{item.title}</span>

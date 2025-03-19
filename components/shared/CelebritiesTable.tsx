@@ -10,6 +10,9 @@ import SearchInput from "./search-input";
 import { Celebrity } from "@/interfaces/types";
 import { TableHeaderComponent } from "./TableHeaderComponent";
 import OwnerFilter from "./OwnerFilter";
+import {  ImagesIcon } from "lucide-react";
+
+const URL_IMG = process.env.NEXT_PUBLIC_BASE_IMAGE_URL;
 
 const CelebritiesTable = () => {
   const { paginatedCelebrities, loading, page, totalPages, refreshTrigger, setPage, fetchCelebrities } =
@@ -55,10 +58,11 @@ const CelebritiesTable = () => {
             columns={[
               { key: "id", label: "ID" },
               { key: "geo", label: "Гео" },
+              { key: "img", label: "Изображение" },
               { key: "name", label: "Имя" },
               { key: "category", label: "Категория" },
               { key: "subject", label: "Субъект" },
-              { key: "about", label: "Инфа" },
+              // { key: "about", label: "Инфа" },
               { key: "owner", label: "Пользователь" },
             ]}
           />
@@ -72,10 +76,25 @@ const CelebritiesTable = () => {
             >
               <TableCell>{celebrity.id}</TableCell>
               <TableCell>{celebrity.geo}</TableCell>
+              <TableCell>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {celebrity.cimg1 === null || celebrity.cimg1 === "" ? (
+                  // <div className="w70 h70 bg-black"></div>
+                 <ImagesIcon size={70} color="#4c81c8"/>
+                ) : (
+                  <img
+                    src={`${URL_IMG + "/"}${celebrity.id + "/"}${celebrity.cimg1}`}
+                    alt="Image"
+                    width={70}
+                    height={70}
+                    className="rounded-xl"
+                  />
+                )}
+              </TableCell>
               <TableCell>{celebrity.name}</TableCell>
               <TableCell>{celebrity.category}</TableCell>
               <TableCell>{celebrity.subject}</TableCell>
-              <TableCell>{celebrity.about}</TableCell>
+              {/* <TableCell>{celebrity.about}</TableCell> */}
               <TableCell>{celebrity.owner || "Неизвестно"}</TableCell>
             </TableRow>
           ))}
