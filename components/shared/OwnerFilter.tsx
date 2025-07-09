@@ -8,43 +8,72 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
+} from "@/components/ui/select";
 import { useCelebritiesStore } from "@/lib/store";
+import { useAuthStore } from "@/lib/auth-store";
 
 export default function OwnerFilter() {
-  // Подписываемся отдельно на каждое поле
   const distinctOwners = useCelebritiesStore((state) => state.distinctOwners);
   const ownerFilter = useCelebritiesStore((state) => state.ownerFilter);
+  const ownerFilterMode = useCelebritiesStore((state) => state.ownerFilterMode);
   const setOwnerFilter = useCelebritiesStore((state) => state.setOwnerFilter);
+  const setOwnerFilterMode = useCelebritiesStore((state) => state.setOwnerFilterMode);
+  const authUser = useAuthStore((state) => state.user);
 
-  // Обработчик выбора нового значения
-  const handleSelectChange = useCallback((value: string) => {
-    setOwnerFilter(value);
-  }, [setOwnerFilter]);
+  const handleModeChange = useCallback(
+    (value: string) => {
+      setOwnerFilterMode(value as "own" | "all");
+    },
+    [setOwnerFilterMode]
+  );
 
-  // Обработчик сброса фильтра
+  const handleOwnerChange = useCallback(
+    (value: string) => {
+      setOwnerFilter(value);
+    },
+    [setOwnerFilter]
+  );
+
   const handleClear = useCallback(() => {
-    setOwnerFilter("");
+    setOwnerFilter(""); // Очистка фильтра по owner
   }, [setOwnerFilter]);
+
+  if (!authUser) return null;
 
   return (
-    <div className="flex items-center gap-2">
-      <Select value={ownerFilter} onValueChange={handleSelectChange}>
+    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+      {/* Режим фильтрации: свои / все */}
+      <Select value={ownerFilterMode} onValueChange={handleModeChange}>
         <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Пользователь" />
+          <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {distinctOwners.map((owner) => (
-            <SelectItem key={owner} value={owner}>
-              {owner}
-            </SelectItem>
-          ))}
+          <SelectItem value="own">Только мои</SelectItem>
+          <SelectItem value="all">Все доступные</SelectItem>
         </SelectContent>
       </Select>
-      {ownerFilter && (
-        <Button variant="outline" onClick={handleClear}>
-          Отмена
-        </Button>
+
+      {/* Дополнительный фильтр по owner */}
+      {ownerFilterMode === "all" && distinctOwners.length > 0 && (
+        <div className="flex items-center gap-2">
+          <Select value={ownerFilter} onValueChange={handleOwnerChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Фильтр по владельцу" />
+            </SelectTrigger>
+            <SelectContent>
+              {distinctOwners.map((owner) => (
+                <SelectItem key={owner} value={owner}>
+                  {owner}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {ownerFilter && (
+            <Button variant="outline" onClick={handleClear}>
+              ✕
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );

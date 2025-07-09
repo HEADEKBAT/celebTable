@@ -1,24 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./app-sidebar";
 import CelebritiesTable from "./CelebritiesTable";
 import Register from "../auth/Register";
 import AuthTable from "./auth-table";
 import Login from "../auth/Login";
+import { useAuthStore } from "@/lib/auth-store";
 
 export default function Layout() {
-  const [currentPage, setCurrentPage] = useState<string>("home");
+  const { user, checkAuth, isCheckingAuth } = useAuthStore();
+  const [currentPage, setCurrentPage] = useState<string>("");
 
-  // Объект страниц
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  useEffect(() => {
+    if (!isCheckingAuth) {
+      if (user) {
+        setCurrentPage("table");
+      } else {
+        setCurrentPage("login");
+      }
+    }
+  }, [user, isCheckingAuth]);
+
   const pages: Record<string, React.ReactNode> = {
     home: <div>Добро пожаловать на главную страницу!</div>,
     table: <CelebritiesTable />,
-    register: <Register />,
+    register: <Register onNavigate={setCurrentPage} />,
     authTable: <AuthTable />,
     login: <Login />,
   };
+
+  // Пока auth не проверен — ничего не рендерим
+  if (isCheckingAuth || !currentPage) return null;
 
   return (
     <SidebarProvider>
@@ -28,7 +46,7 @@ export default function Layout() {
         {pages[currentPage] || (
           <div>
             <h1>Страница не найдена!</h1>
-            <button onClick={() => setCurrentPage("home")} className="btn btn-primary">
+            <button onClick={() => setCurrentPage("table")} className="btn btn-primary">
               Вернуться на главную
             </button>
           </div>

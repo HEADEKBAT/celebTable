@@ -1,4 +1,5 @@
 import { create } from "zustand";
+
 const AUTH_URL = process.env.NEXT_PUBLIC_AUTH_DATABASE_URL;
 
 export interface User {
@@ -10,16 +11,17 @@ export interface User {
 
 interface AuthState {
   user: User | null;
+  isCheckingAuth: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   setUser: (user: User) => void;
-  checkAuth: () => void;
+  checkAuth: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  
-  // Метод авторизации: при успешном входе сохраняем данные в состояние и localStorage под ключом "UliseUser"
+  isCheckingAuth: true,
+
   login: async (email: string, password: string) => {
     try {
       const res = await fetch(`${AUTH_URL}`, {
@@ -31,7 +33,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (!res.ok) {
         throw new Error(data.error || "Ошибка авторизации");
       }
-      
+
       const user: User = {
         isAuthenticated: true,
         role: data.user.role,
@@ -47,29 +49,31 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  // Метод выхода: очищаем состояние и удаляем объект из localStorage
   logout: () => {
     set({ user: null });
     localStorage.removeItem("UliseUser");
   },
 
-  // Устанавливаем пользователя и сохраняем в localStorage
   setUser: (user: User) => {
     set({ user });
     localStorage.setItem("UliseUser", JSON.stringify(user));
   },
 
-  // Метод для проверки наличия ранее авторизованного пользователя в localStorage.
-  // Если объект найден, обновляем состояние.
-  checkAuth: () => {
-    const storedUser = localStorage.getItem("UliseUser");
-    if (storedUser) {
-      try {
+  checkAuth: async () => {
+    set({ isCheckingAuth: true });
+    try {
+      const storedUser = localStorage.getItem("UliseUser");
+      if (storedUser) {
         const user: User = JSON.parse(storedUser);
         set({ user });
-      } catch (err) {
-        console.error("Ошибка парсинга данных из localStorage:", err);
+      } else {
+        set({ user: null });
       }
+    } catch (err) {
+      console.error("Ошибка парсинга данных из localStorage:", err);
+      set({ user: null });
+    } finally {
+      set({ isCheckingAuth: false });
     }
   },
 }));

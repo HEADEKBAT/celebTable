@@ -16,9 +16,7 @@ export default function Home() {
         <Head>
           <title>Celebrities Table</title>
         </Head>
-        {/* <AuthTable /> */}
-        {/* <h1>Таблица знаменитостей</h1> */}
-        {/* <CelebritiesTable></CelebritiesTable> */}
+       
       </div>
     </>
   );

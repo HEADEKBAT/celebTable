@@ -75,12 +75,13 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
           page: string;
           icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>;
         }[]) = [];
+        
     if (!user) {
       // Не авторизован: доступны только Home, Login, Register
       allowedItems = allItems.filter((item) => ["home", "login", "register"].includes(item.page));
       if (!allowedItems.find((item) => item.page === activePage)) {
-        setActivePage("home");
-        onNavigate("home");
+       setActivePage("login");
+        onNavigate("login");
       }
     } else {
       // Пользователь авторизован

@@ -11,6 +11,7 @@ import { Celebrity } from "@/interfaces/types";
 import { TableHeaderComponent } from "./TableHeaderComponent";
 import OwnerFilter from "./OwnerFilter";
 import {  ImagesIcon } from "lucide-react";
+import { RefreshButton } from "./RefreshButton";
 
 const URL_IMG = process.env.NEXT_PUBLIC_BASE_IMAGE_URL;
 
@@ -48,8 +49,9 @@ const CelebritiesTable = () => {
           <SearchInput />
           <Button onClick={handleNewRecord}>Добавить новую запись</Button>
         </div>
-        <div>
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
           <OwnerFilter />
+          <RefreshButton />
         </div>
       </div>
       <Table>

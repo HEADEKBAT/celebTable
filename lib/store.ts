@@ -4,23 +4,27 @@ import { useAuthStore } from "./auth-store";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+type OwnerFilterMode = "own" | "all";
+
 export interface CelebritiesState {
-  celebrities: Celebrity[];              // Все записи из API
-  paginatedCelebrities: Celebrity[];       // Записи для текущей страницы (после всех фильтраций)
-  distinctOwners: string[];                // Уникальные значения поля owner (из доступных записей)
+  celebrities: Celebrity[];
+  paginatedCelebrities: Celebrity[];
+  distinctOwners: string[];
   loading: boolean;
-  refreshTrigger: number;                  // Состояние для отслеживания обновлений
-  filter: string;                          // Текстовый фильтр (по geo, name, category, subject, id)
-  ownerFilter: string;                     // Фильтр по полю owner (выбирается из выпадающего списка)
-  sortBy: string;                          // Поле сортировки
-  sortOrder: "asc" | "desc";               // Порядок сортировки
-  page: number;                            // Текущая страница
-  limit: number;                           // Количество записей на странице
-  totalPages: number;                      // Общее количество страниц
+  refreshTrigger: number;
+  filter: string;
+  ownerFilter: string;
+  ownerFilterMode: OwnerFilterMode;
+  sortBy: string;
+  sortOrder: "asc" | "desc";
+  page: number;
+  limit: number;
+  totalPages: number;
   triggerRefresh: () => void;
   setPage: (page: number) => void;
   setFilter: (filter: string) => void;
   setOwnerFilter: (owner: string) => void;
+  setOwnerFilterMode: (mode: OwnerFilterMode) => void;
   setSort: (sortBy: string, sortOrder: "asc" | "desc") => void;
   setLoading: (loading: boolean) => void;
   fetchCelebrities: () => Promise<void>;
@@ -35,6 +39,7 @@ export const useCelebritiesStore = create<CelebritiesState>((set, get) => ({
   refreshTrigger: 0,
   filter: "",
   ownerFilter: "",
+  ownerFilterMode: "own",
   sortBy: "id",
   sortOrder: "asc",
   page: 1,
@@ -53,6 +58,11 @@ export const useCelebritiesStore = create<CelebritiesState>((set, get) => ({
 
   setOwnerFilter: (owner) => {
     set({ ownerFilter: owner, page: 1 });
+    get().applyFilterAndPagination();
+  },
+
+  setOwnerFilterMode: (mode) => {
+    set({ ownerFilterMode: mode, page: 1 });
     get().applyFilterAndPagination();
   },
 
@@ -96,82 +106,82 @@ export const useCelebritiesStore = create<CelebritiesState>((set, get) => ({
       sortOrder,
       page,
       limit,
+      ownerFilterMode,
     } = get();
 
-    // Шаг 1. Первичная фильтрация по доступности (по полю owner)
-    // Если пользователь не авторизован, остаются записи, где owner пустой или равен "#n/a".
-    // Если пользователь авторизован, доступны записи, где owner пустой/#n/a или совпадает с authUser.name.
     const authUser = useAuthStore.getState().user;
-    let accessible = celebrities.filter((celeb) => {
-      const ownerVal = celeb.owner ? celeb.owner.toLowerCase().trim() : "";
-      if (!authUser) {
-        return ownerVal === "" || ownerVal === "#n/a";
-      } else {
-        return ownerVal === "" ||
-               ownerVal === "#n/a" ||
-               ownerVal === authUser.name.toLowerCase().trim();
-      }
-    });
+    let accessible: Celebrity[] = [];
 
-    // Шаг 2. Вычисляем уникальные значения owner из доступных записей
-    const computedDistinctOwners = Array.from(
+    if (!authUser) {
+      accessible = celebrities.filter((c) => {
+        const ownerVal = c.owner?.toLowerCase().trim() || "";
+        return ownerVal === "" || ownerVal === "#n/a";
+      });
+    } else if (authUser.role === "admin") {
+      if (ownerFilterMode === "own") {
+        accessible = celebrities.filter((c) =>
+          (c.owner?.toLowerCase().trim() || "") === authUser.name.toLowerCase().trim()
+        );
+      } else {
+        accessible = [...celebrities];
+      }
+    } else if (authUser.role === "teamUser") {
+      if (ownerFilterMode === "own") {
+        accessible = celebrities.filter((c) =>
+          (c.owner?.toLowerCase().trim() || "") === authUser.name.toLowerCase().trim()
+        );
+      } else {
+        accessible = celebrities.filter((c) => {
+          const ownerVal = c.owner?.toLowerCase().trim() || "";
+          return ownerVal === "" || ownerVal === "#n/a";
+        });
+      }
+    }
+
+    const distinctOwners = Array.from(
       new Set(
         accessible
-          .map((celeb) => {
-            return typeof celeb.owner === "string" ? celeb.owner.trim() : "";
-          })
-          .filter((o) => o !== "" && o.toLowerCase() !== "#n/a")
+          .map((c) => c.owner?.trim() || "")
+          .filter((o) => o && o.toLowerCase() !== "#n/a")
       )
     );
-    // Обновляем distinctOwners в состоянии
-    set({ distinctOwners: computedDistinctOwners });
+    set({ distinctOwners });
 
-    // Шаг 3. Если установлен дополнительный фильтр по owner, оставляем записи,
-    // у которых значение поля owner (в нижнем регистре) совпадает с ownerFilter.
     if (ownerFilter.trim() !== "") {
-      const lowerOwnerFilter = ownerFilter.toLowerCase().trim();
-      accessible = accessible.filter((celeb) => {
-        const ownerVal = celeb.owner ? celeb.owner.toLowerCase().trim() : "";
-        return ownerVal === lowerOwnerFilter;
+      const lowerOwner = ownerFilter.toLowerCase().trim();
+      accessible = accessible.filter((c) => {
+        const ownerVal = c.owner?.toLowerCase().trim() || "";
+        return ownerVal === lowerOwner;
       });
     }
 
-    // Шаг 4. Применяем текстовый фильтр по полям: geo, name, category, subject, id.
     const lowerCaseFilter = filter.toLowerCase();
-    const filtered = accessible.filter((celeb) => {
+    const filtered = accessible.filter((c) => {
       const matchesText =
-        celeb.geo.toLowerCase().includes(lowerCaseFilter) ||
-        celeb.name.toLowerCase().includes(lowerCaseFilter) ||
-        celeb.category.toLowerCase().includes(lowerCaseFilter) ||
-        celeb.subject.toLowerCase().includes(lowerCaseFilter);
-      const matchesId =
-        !isNaN(Number(filter)) &&
-        celeb.id != null &&
-        celeb.id.toString().includes(filter);
+        c.geo.toLowerCase().includes(lowerCaseFilter) ||
+        c.name.toLowerCase().includes(lowerCaseFilter) ||
+        c.category.toLowerCase().includes(lowerCaseFilter) ||
+        c.subject.toLowerCase().includes(lowerCaseFilter);
+      const matchesId = !isNaN(Number(filter)) && c.id?.toString().includes(filter);
       return matchesText || matchesId;
     });
 
-    // Шаг 5. Сортировка
     const sorted = filtered.sort((a, b) => {
       const aValue = a[sortBy as keyof Celebrity];
       const bValue = b[sortBy as keyof Celebrity];
       if (sortBy === "id") {
-        const idA = Number(a.id) || 0;
-        const idB = Number(b.id) || 0;
-        return sortOrder === "asc" ? idA - idB : idB - idA;
+        return sortOrder === "asc"
+          ? Number(a.id) - Number(b.id)
+          : Number(b.id) - Number(a.id);
       }
       if (typeof aValue === "string" && typeof bValue === "string") {
         return sortOrder === "asc"
           ? aValue.localeCompare(bValue)
           : bValue.localeCompare(aValue);
       }
-      if (typeof aValue === "number" && typeof bValue === "number") {
-        return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
-      }
       return 0;
     });
 
-    // Шаг 6. Пагинация
     const totalPages = Math.ceil(sorted.length / limit);
     const startIndex = (page - 1) * limit;
     const paginated = sorted.slice(startIndex, startIndex + limit);

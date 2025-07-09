@@ -7,16 +7,18 @@ import { Alert } from "../ui/alert";
 
 const AUTH_URL = process.env.NEXT_PUBLIC_AUTH_DATABASE_URL;
 
-export default function Register() {
+interface RegisterProps {
+  onNavigate: (page: string) => void;
+}
+
+export default function Register({ onNavigate }: RegisterProps) {
   const [form, setForm] = useState({ email: "", password: "", name: "" });
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setMessage("");
     setError("");
 
     if (form.password.length < 6) {
@@ -26,7 +28,6 @@ export default function Register() {
     }
 
     try {
-      // Используем FormData для отправки данных в формате multipart/form-data
       const formData = new FormData();
       formData.append("email", form.email);
       formData.append("password", form.password);
@@ -43,14 +44,10 @@ export default function Register() {
         throw new Error(data.error || "Ошибка при регистрации");
       }
 
-      setMessage("Регистрация прошла успешно!");
-      setForm({ email: "", password: "", name: "" });
+      // ✅ После успешной регистрации — переход на login
+      onNavigate("login");
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Произошла ошибка при регистрации");
-      }
+      setError(err instanceof Error ? err.message : "Произошла ошибка");
     } finally {
       setLoading(false);
     }
@@ -93,7 +90,6 @@ export default function Register() {
         </Button>
 
         {error && <Alert variant="destructive">{error}</Alert>}
-        {message && <Alert variant="destructive">{message}</Alert>}
       </form>
     </div>
   );
