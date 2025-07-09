@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Celebrity } from "@/interfaces/types";
-import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 
 const MAX_FILE_SIZE = 80 * 1024; // 80 KB

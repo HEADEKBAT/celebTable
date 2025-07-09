@@ -20,7 +20,6 @@ interface TableDialogProps {
   celebrity?: Celebrity | null;
 }
 
-const imageFields = Array.from({ length: 10 }, (_, i) => `cimg${i + 1}` as keyof Celebrity);
 
 export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) => {
   const { triggerRefresh } = useCelebritiesStore();
