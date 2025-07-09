@@ -83,19 +83,23 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
     return allFields.slice(0, Math.min(baseLength, 10));
   })();
 
-  const validate = () => {
-    const requiredFields: (keyof Celebrity)[] = ["geo", "name", "category", "subject"];
-    const newErrors: Record<string, boolean> = {};
-    let isValid = true;
-    requiredFields.forEach((field) => {
-      if (!formData[field] || formData[field]?.trim() === "") {
-        newErrors[field] = true;
-        isValid = false;
-      }
-    });
-    setErrors(newErrors);
-    return isValid;
-  };
+ const validate = () => {
+  const requiredFields: (keyof Celebrity)[] = ["geo", "name", "category", "subject"];
+  const newErrors: Record<string, boolean> = {};
+  let isValid = true;
+
+  requiredFields.forEach((field) => {
+    const value = formData[field];
+    if (!value || String(value).trim() === "") {
+      newErrors[field] = true;
+      isValid = false;
+    }
+  });
+
+  setErrors(newErrors);
+  return isValid;
+};
+
 
   const handleSubmit = async () => {
     if (!validate()) return;
