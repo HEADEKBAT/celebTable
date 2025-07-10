@@ -10,6 +10,8 @@ import { useCelebritiesStore } from "@/lib/store";
 import { ImageField } from "./image-field";
 import { useAuthStore } from "@/lib/auth-store";
 import clsx from "clsx";
+import { SubjectSelect } from "./subject-select";
+import { CategorySelect } from "./category-select";
 
 const BASE_IMAGE_URL = process.env.NEXT_PUBLIC_BASE_IMAGE_URL;
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -20,7 +22,6 @@ interface TableDialogProps {
   celebrity?: Celebrity | null;
 }
 
-
 export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) => {
   const { triggerRefresh } = useCelebritiesStore();
   const { user: authUser } = useAuthStore();
@@ -30,7 +31,7 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
     geo: "",
     name: "",
     category: "",
-    subject: "",
+    subject: "universal",
     about: "",
     owner: null,
     cimg1: "",
@@ -83,23 +84,22 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
     return allFields.slice(0, Math.min(baseLength, 10));
   })();
 
- const validate = () => {
-  const requiredFields: (keyof Celebrity)[] = ["geo", "name", "category", "subject"];
-  const newErrors: Record<string, boolean> = {};
-  let isValid = true;
+  const validate = () => {
+    const requiredFields: (keyof Celebrity)[] = ["geo", "name", "category", "subject"];
+    const newErrors: Record<string, boolean> = {};
+    let isValid = true;
 
-  requiredFields.forEach((field) => {
-    const value = formData[field];
-    if (!value || String(value).trim() === "") {
-      newErrors[field] = true;
-      isValid = false;
-    }
-  });
+    requiredFields.forEach((field) => {
+      const value = formData[field];
+      if (!value || String(value).trim() === "") {
+        newErrors[field] = true;
+        isValid = false;
+      }
+    });
 
-  setErrors(newErrors);
-  return isValid;
-};
-
+    setErrors(newErrors);
+    return isValid;
+  };
 
   const handleSubmit = async () => {
     if (!validate()) return;
@@ -211,21 +211,18 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
             onChange={(e) => handleInputChange("name", e.target.value)}
             className={clsx({ "border-red-500": errors.name })}
           />
-          <Input
-            required
-            placeholder="Категория"
+          <CategorySelect         
+            
             value={formData.category}
-            onChange={(e) => handleInputChange("category", e.target.value)}
-            className={clsx({ "border-red-500": errors.category })}
+            onChange={(value) => handleInputChange("category", value)}
+            hasError={errors.category}
           />
-          <Input
-            required
-            placeholder="Субъект"
+          <SubjectSelect
             value={formData.subject}
-            onChange={(e) => handleInputChange("subject", e.target.value)}
-            className={clsx({ "border-red-500": errors.subject })}
+            onChange={(value) => handleInputChange("subject", value)}
+            hasError={errors.subject}
           />
-          <Textarea            
+          <Textarea
             placeholder="Описание"
             value={formData.about}
             onChange={(e) => handleInputChange("about", e.target.value)}
