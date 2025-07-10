@@ -13,7 +13,7 @@ import { useCelebritiesStore } from "@/lib/store";
 import { useAuthStore } from "@/lib/auth-store";
 
 export default function OwnerFilter() {
-  const distinctOwners = useCelebritiesStore((state) => state.distinctOwners);
+  const distinctOwners = useCelebritiesStore((state) => state.uniqueOwners);
   const ownerFilter = useCelebritiesStore((state) => state.ownerFilter);
   const ownerFilterMode = useCelebritiesStore((state) => state.ownerFilterMode);
   const setOwnerFilter = useCelebritiesStore((state) => state.setOwnerFilter);

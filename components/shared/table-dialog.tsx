@@ -11,6 +11,7 @@ import { ImageField } from "./image-field";
 import { useAuthStore } from "@/lib/auth-store";
 import clsx from "clsx";
 import { SubjectSelect } from "./subject-select";
+import { OwnerSelect } from "./owner-select";
 import { CategorySelect } from "./category-select";
 
 const BASE_IMAGE_URL = process.env.NEXT_PUBLIC_BASE_IMAGE_URL;
@@ -23,7 +24,7 @@ interface TableDialogProps {
 }
 
 export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) => {
-  const { triggerRefresh } = useCelebritiesStore();
+  const { triggerRefresh, uniqueOwners } = useCelebritiesStore();
   const { user: authUser } = useAuthStore();
 
   const initialState: Celebrity = {
@@ -55,10 +56,10 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
   }, [celebrity]);
 
   useEffect(() => {
-    if (authUser) {
+    if (authUser && !celebrity) {
       setFormData((prev) => ({ ...prev, owner: authUser.name }));
     }
-  }, [authUser]);
+  }, [authUser, celebrity]);
 
   const handleInputChange = (field: keyof Celebrity, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -211,7 +212,7 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
             onChange={(e) => handleInputChange("name", e.target.value)}
             className={clsx({ "border-red-500": errors.name })}
           />
-          <CategorySelect         
+         <CategorySelect         
             
             value={formData.category}
             onChange={(value) => handleInputChange("category", value)}
@@ -228,6 +229,13 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
             onChange={(e) => handleInputChange("about", e.target.value)}
             className={clsx({ "border-red-500": errors.about })}
           />
+          {authUser?.role === "admin" && formData.id && (
+            <OwnerSelect
+              value={formData.owner || ""}
+              onChange={(value) => handleInputChange("owner", value)}
+              options={uniqueOwners}
+            />
+          )}
           <div className="grid grid-cols-[repeat(auto-fit,_minmax(128px,_1fr))] gap-4">
             {visibleImageFields.map((field) => (
               <ImageField

@@ -9,7 +9,7 @@ type OwnerFilterMode = "own" | "all";
 export interface CelebritiesState {
   celebrities: Celebrity[];
   paginatedCelebrities: Celebrity[];
-  distinctOwners: string[];
+  uniqueOwners: string[];
   loading: boolean;
   refreshTrigger: number;
   filter: string;
@@ -34,7 +34,7 @@ export interface CelebritiesState {
 export const useCelebritiesStore = create<CelebritiesState>((set, get) => ({
   celebrities: [],
   paginatedCelebrities: [],
-  distinctOwners: [],
+  uniqueOwners: [],
   loading: false,
   refreshTrigger: 0,
   filter: "",
@@ -138,14 +138,14 @@ export const useCelebritiesStore = create<CelebritiesState>((set, get) => ({
       }
     }
 
-    const distinctOwners = Array.from(
+    const uniqueOwners = Array.from(
       new Set(
         accessible
           .map((c) => c.owner?.trim() || "")
           .filter((o) => o && o.toLowerCase() !== "#n/a")
       )
     );
-    set({ distinctOwners });
+    set({ uniqueOwners });
 
     if (ownerFilter.trim() !== "") {
       const lowerOwner = ownerFilter.toLowerCase().trim();
