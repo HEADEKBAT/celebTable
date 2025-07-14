@@ -1,9 +1,6 @@
 "use client";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import clsx from "clsx";
-
-const catrgoryOptions = ["doctor", "celebrity"];
 
 interface CategorySelectProps {
   value: string;
@@ -11,19 +8,26 @@ interface CategorySelectProps {
   hasError?: boolean;
 }
 
+const categoryOptions = ["doctor", "celebrity"];
+
 export const CategorySelect = ({ value, onChange, hasError }: CategorySelectProps) => {
   return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className={clsx({ "border-red-500": hasError })}>
-        <SelectValue placeholder="Категория" />
-      </SelectTrigger>
-      <SelectContent>
-        {catrgoryOptions.map((category) => (
-          <SelectItem key={category} value={category}>
-            {category}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={clsx(
+        "w-full border rounded px-3 py-2",
+        hasError && "border-red-500"
+      )}
+    >
+      <option value="" disabled>
+        Категория
+      </option>
+      {categoryOptions.map((category) => (
+        <option key={category} value={category}>
+          {category}
+        </option>
+      ))}
+    </select>
   );
 };

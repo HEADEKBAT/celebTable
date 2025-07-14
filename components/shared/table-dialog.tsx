@@ -13,6 +13,7 @@ import clsx from "clsx";
 import { SubjectSelect } from "./subject-select";
 import { OwnerSelect } from "./owner-select";
 import { CategorySelect } from "./category-select";
+import { FocusScope } from "@radix-ui/react-focus-scope";
 
 const BASE_IMAGE_URL = process.env.NEXT_PUBLIC_BASE_IMAGE_URL;
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -191,8 +192,9 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto overflow-x-hidden">
+    <Dialog open={isOpen} onOpenChange={onClose} >
+      <FocusScope trapped={false} loop={false}> 
+      <DialogContent autoFocus={false} onOpenAutoFocus={(e) => e.preventDefault()}    className="max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <DialogTitle>{formData.id ? "Редактировать запись" : "Добавить запись"}</DialogTitle>
         <DialogDescription>
           {formData.id ? "Измените информацию и сохраните изменения." : "Заполните данные для новой записи."}
@@ -212,8 +214,7 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
             onChange={(e) => handleInputChange("name", e.target.value)}
             className={clsx({ "border-red-500": errors.name })}
           />
-         <CategorySelect         
-            
+          <CategorySelect
             value={formData.category}
             onChange={(value) => handleInputChange("category", value)}
             hasError={errors.category}
@@ -249,18 +250,24 @@ export const TableDialog = ({ isOpen, onClose, celebrity }: TableDialogProps) =>
           </div>
         </div>
         <div className="mt-4 flex justify-end space-x-2">
-          <Button variant="outline" onClick={onClose}>Отмена</Button>
+          <Button variant="outline" onClick={onClose}>
+            Отмена
+          </Button>
           {formData.id ? (
             <>
-              <Button variant="outline" onClick={handleDuplicate}>Сделать дубль</Button>
+              <Button variant="outline" onClick={handleDuplicate}>
+                Сделать дубль
+              </Button>
               <Button onClick={handleSubmit}>Редактировать</Button>
-              <Button variant="destructive" onClick={handleDelete}>Удалить</Button>
+              <Button variant="destructive" onClick={handleDelete}>
+                Удалить
+              </Button>
             </>
           ) : (
             <Button onClick={handleSubmit}>Создать</Button>
           )}
         </div>
-      </DialogContent>
+      </DialogContent></FocusScope>
     </Dialog>
   );
 };

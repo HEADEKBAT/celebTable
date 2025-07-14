@@ -1,13 +1,12 @@
 "use client";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import clsx from "clsx";
+
+interface SubjectSelectProps {
+  value: string;
+  onChange: (value: string) => void;
+  hasError?: boolean;
+}
 
 const subjectOptions = [
   "universal", "weightloss", "hypertension", "enlargement", "potency", "diabetes", "joints",
@@ -16,25 +15,24 @@ const subjectOptions = [
   "valgus", "alcoholism", "psoriasis", "immunity", "rejuvenation", "lungs",
 ];
 
-interface SubjectSelectProps {
-  value: string;
-  onChange: (value: string) => void;
-  hasError?: boolean;
-}
-
 export const SubjectSelect = ({ value, onChange, hasError }: SubjectSelectProps) => {
   return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className={clsx({ "border-red-500": hasError })}>
-        <SelectValue placeholder="Субъект" />
-      </SelectTrigger>
-      <SelectContent>
-        {subjectOptions.map((subject) => (
-          <SelectItem key={subject} value={subject}>
-            {subject}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={clsx(
+        "w-full border rounded px-3 py-2",
+        hasError && "border-red-500"
+      )}
+    >
+      <option value="" disabled>
+        Субъект
+      </option>
+      {subjectOptions.map((subject) => (
+        <option key={subject} value={subject}>
+          {subject}
+        </option>
+      ))}
+    </select>
   );
 };
